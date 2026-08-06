@@ -174,7 +174,7 @@ class MongoDB:
 
         return {
             1: userbot.one, 2: userbot.two,
-            3: userbot.three, 4: userbot.three,
+            3: userbot.three, 4: userbot.four,
             5: userbot.five,
         }.get(num)
 
