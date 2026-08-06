@@ -59,8 +59,14 @@ def checkUB(play):
                                 chat_id=chat_id, user_id=client.id
                             )
                         except Exception:
-                            last_error = Exception("Banned")
-                            raise last_error 
+                            return await m.reply_text(
+                            m.lang["play_banned"].format(
+                                app.name,
+                                client.id,
+                                client.mention,
+                                f"@{client.username}" if client.username else None,
+                            )
+                            )
                     
                     joined = True
                     break
