@@ -21,7 +21,7 @@ async def _watcher_vc(_, m: types.Message):
 
 async def auto_leave():
     while True:
-        await asyncio.sleep(3600)
+        await asyncio.sleep(10)
         if not await db.auto_leave():
             continue
         logger.info("Running auto-leave task...")
