@@ -30,7 +30,7 @@ class Config:
 
         self.API_KEY = getenv("API_KEY", "d25f05_Sp_QkEWGkDF5Q8SnY3WXKvUch1P3piul")
         self.API_URL = getenv("API_URL", "http://api.onegrab.fun")
-        self.AUTO_LEAVE: bool = getenv("AUTO_LEAVE", "True").lower() == "true"
+        self.AUTO_LEAVE: bool = getenv("AUTO_LEAVE", "False").lower() == "true"
         self.AUTO_END: bool = getenv("AUTO_END", "False").lower() == "true"
 
         self.THUMB_GEN: bool = getenv("THUMB_GEN", "True").lower() == "true"
