@@ -59,7 +59,7 @@ def checkUB(play):
                                 chat_id=chat_id, user_id=client.id
                             )
                         except Exception:
-                            return await m.reply_text(
+                            return await umm.edit_text(
                             m.lang["play_banned"].format(
                                 app.name,
                                 client.id,
