@@ -1,5 +1,5 @@
 aiohttp~=3.13.5
-apscheduler~=3.11.2
+apscheduler~=3.11.3
 aiofiles~=25.1.0
 kurigram>=2.2.21
 pillow~=12.2.0
