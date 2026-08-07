@@ -178,6 +178,33 @@ class MongoDB:
             5: userbot.five,
         }.get(num)
 
+    async def change_assistant(self, chat_id: int):
+        from anony import anon
+
+        total = len(anon.clients)
+        if chat_id not in self.assistant:
+            await self.get_assistant(chat_id)
+
+        current = self.assistant.get(chat_id, 1)
+        if total <= 1:
+            return await self.get_client(chat_id)
+
+        new_num = (current % total) + 1
+        await self.assistantdb.update_one(
+            {"_id": chat_id},
+            {"$set": {"num": new_num}},
+            upsert=True,
+        )
+
+        self.assistant[chat_id] = new_num
+        return {
+            1: userbot.one,
+            2: userbot.two,
+            3: userbot.three,
+            4: userbot.four,
+            5: userbot.five,
+        }.get(new_num)
+
     # BLACKLIST METHODS
     async def add_blacklist(self, chat_id: int) -> None:
         if str(chat_id).startswith("-"):
