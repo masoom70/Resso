@@ -25,7 +25,7 @@ async def auto_leave():
         if not await db.auto_leave():
             continue
         logger.info("Running auto-leave task...")
-        for ub in userbot.clients:
+        for i, ub in enumerate(userbot.clients, start=1):
             left = 0
             try:
                 chats = [dialog.chat.id async for dialog in ub.get_dialogs()
@@ -38,9 +38,9 @@ async def auto_leave():
                     try:
                         await ub.leave_chat(chat)
                         left += 1
-                        logger.info(f"Left {chat}")
+                        logger.info(f"Assistant {i} left: {chat}")
                     except Exception as ex:
-                        logger.warning(f"Failed to leave {chat}: {ex}")
+                        logger.warning(f"Assistant {i} failed to leave {chat}: {ex}")
                     await asyncio.sleep(15)
             except asyncio.CancelledError:
                 raise
