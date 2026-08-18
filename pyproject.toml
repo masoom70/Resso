@@ -17,4 +17,5 @@ dependencies = [
     "python-dotenv~=1.2.1",
     "yt-dlp[default]>=2026.3.17",
     "numpy==2.2.6",
+    "aiofiles==25.1.0",
 ]
