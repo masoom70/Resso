@@ -4,7 +4,7 @@ import importlib
 from contextlib import suppress
 
 from anony import (anon, app, config, db,
-                   logger, stop, userbot, yt)
+                   logger, stop, userbot, yt, thumb)
 from anony.plugins import all_modules
 
 async def idle():
@@ -20,6 +20,7 @@ async def main():
     await app.boot()
     await userbot.boot()
     await anon.boot()
+    await thumb.start()
 
     for module in all_modules:
         importlib.import_module(f"anony.plugins.{module}")
