@@ -18,6 +18,17 @@ from anony.helpers import cache, Track, utils
 from ._api import FallenApi
 
 
+class DummyLogger:
+    def debug(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        pass
+
+
 class YouTube:
     def __init__(self):
         self.base = "https://www.youtube.com/watch?v="
@@ -152,6 +163,7 @@ class YouTube:
             "geo_bypass": True,
             "no_warnings": True,
             "overwrites": False,
+            "logger": DummyLogger(),
             "nocheckcertificate": True,
             "cookiefile": cookie,
         }
