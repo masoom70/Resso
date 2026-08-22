@@ -1,12 +1,12 @@
-# Copyright (c) 2025 AnonymousX1025
+# Copyright (c) 2025 NovaTuneMusic Team
 # Licensed under the MIT License.
-# This file is part of AnonXMusic
+# This file is part of NovaTuneMusic
 
 
-import asyncio
 import os
 import random
 import re
+import asyncio
 from pathlib import Path
 
 import aiohttp
@@ -34,7 +34,7 @@ class YouTube:
         self.base = "https://www.youtube.com/watch?v="
         self.cookies = []
         self.checked = False
-        self.cookie_dir = "anony/cookies"
+        self.cookie_dir = "NovaTuneMusic/cookies"
         self.fallen = FallenApi()
         self.warned = False
         self.regex = re.compile(
@@ -71,6 +71,15 @@ class YouTube:
     def valid(self, url: str) -> bool:
         return bool(re.match(self.regex, url))
 
+    @staticmethod
+    def thumbnail_url(video_id: str, thumbnails=None) -> str:
+        """Choose the best result thumbnail and keep a YouTube fallback."""
+        for thumbnail in reversed(thumbnails or []):
+            url = thumbnail.get("url") if isinstance(thumbnail, dict) else None
+            if url:
+                return url.split("?")[0]
+        return f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+
     async def search(self, query: str, m_id: int, video: bool = False) -> Track | None:
         try:
             _search = VideosSearch(query, limit=1, with_live=False)
@@ -86,7 +95,7 @@ class YouTube:
                 duration_sec=utils.to_seconds(data.get("duration")),
                 message_id=m_id,
                 title=data.get("title")[:25],
-                thumbnail=data.get("thumbnails", [{}])[-1].get("url").split("?")[0],
+                thumbnail=self.thumbnail_url(data.get("id"), data.get("thumbnails")),
                 url=data.get("link"),
                 view_count=data.get("viewCount", {}).get("short"),
                 video=video,
@@ -108,13 +117,14 @@ class YouTube:
                 duration=data.get("duration"),
                 duration_sec=utils.to_seconds(data.get("duration")),
                 title=data.get("title")[:25],
-                thumbnail=data.get("thumbnails")[-1].get("url").split("?")[0],
+                thumbnail=self.thumbnail_url(data.get("id"), data.get("thumbnails")),
                 url=data.get("link"),
                 view_count="",
                 video=False,
             )
             return track
-        except Exception:
+        except Exception as ex:
+            logger.warning("Autoplay lookup failed for %s: %s", id, ex)
             return None
 
     async def playlist(self, limit: int, user: str, url: str, video: bool) -> list[Track | None]:
@@ -128,7 +138,7 @@ class YouTube:
                     duration=data.get("duration"),
                     duration_sec=utils.to_seconds(data.get("duration")),
                     title=data.get("title")[:25],
-                    thumbnail=data.get("thumbnails")[-1].get("url").split("?")[0],
+                    thumbnail=self.thumbnail_url(data.get("id"), data.get("thumbnails")),
                     url=data.get("link").split("&list=")[0],
                     user=user,
                     view_count="",
@@ -140,19 +150,15 @@ class YouTube:
         return tracks
 
     async def download(self, video_id: str, video: bool = False) -> str | None:
-        if cached := await cache.fetch_song(video_id):
+        if cached := await cache.fetch_song(video_id, video=video):
             return cached
 
         url = self.base + video_id
-        if not video and config.API_KEY and config.API_URL:
-            if file_path := await self.fallen.download_track(video_id, url):
-                await cache.handle_dl(file_path, video_id)
-                return file_path
-
         ext = "mp4" if video else "webm"
         filename = f"downloads/{video_id}.{ext}"
 
         if Path(filename).exists():
+            await cache.handle_dl(filename, video_id, video=video)
             return filename
 
         cookie = self.get_cookies()
@@ -166,6 +172,7 @@ class YouTube:
             "logger": DummyLogger(),
             "nocheckcertificate": True,
             "cookiefile": cookie,
+            "remote_components": ["ejs:github"],
         }
 
         if video:
@@ -185,16 +192,16 @@ class YouTube:
                 try:
                     ydl.download([url])
                 except (yt_dlp.utils.DownloadError, yt_dlp.utils.ExtractorError):
-                    if cookie: self.cookies.remove(cookie)
                     return None
                 except Exception as ex:
                     logger.warning("Download failed: %s", ex)
                     return None
             return filename
 
-        await asyncio.to_thread(_download)
-        try:
-            await cache.handle_dl(filename, video_id)
-        except Exception:
-            pass
-        return filename
+        file_path = await asyncio.to_thread(_download)
+        if not file_path:
+            logger.warning("yt-dlp did not return media for %s (video=%s).", video_id, video)
+            return None
+        await cache.handle_dl(file_path, video_id, video=video)
+        return file_path
+        
