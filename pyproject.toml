@@ -14,7 +14,7 @@ dependencies = [
     "pymongo==4.17.0",
     "pytgcrypto==1.2.12",
     "py-tgcalls==3.0.0.dev4",
-    "py-yt-search==0.7.2",
+    "py-yt-search==0.7.3",
     "python-dotenv==1.2.2",
     "yt-dlp[default]>=2026.8.19",
     "numpy==2.2.6",
