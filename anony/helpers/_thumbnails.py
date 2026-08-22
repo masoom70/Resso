@@ -176,4 +176,3 @@ class Thumbnail:
         except Exception as e:
             print(f"Error: {e}")
             return config.DEFAULT_THUMB
-          
