@@ -56,6 +56,7 @@ yt = YouTube()
 
 from anony.helpers import Queue
 queue = Queue()
+from anony.helpers._thumbnails import Thumbnail
 thumb = Thumbnail()
 
 from anony.core.calls import TgCall
