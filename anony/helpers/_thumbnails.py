@@ -17,8 +17,8 @@ class Thumbnail:
         self.rect = (914, 514)
         self.fill = (255, 255, 255)
         self.mask = Image.new("L", self.rect, 0)
-        self.font1 = ImageFont.truetype("anony/helpers/Raleway-Bold.ttf", 30)
-        self.font2 = ImageFont.truetype("anony/helpers/Inter-Light.ttf", 30)
+        self.font1 = ImageFont.truetype("anony/helpers/font.ttf", 30)
+        self.font2 = ImageFont.truetype("anony/helpers/font2.ttf", 30)
         self.session: aiohttp.ClientSession | None = None
 
     async def start(self) -> None:
