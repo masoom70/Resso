@@ -32,7 +32,7 @@ async def main():
     app.sudoers.update(sudoers)
     app.bl_users.update(await db.get_blacklisted())
     
-    from NovaTuneMusic.helpers import thumb
+    from anony.helpers import thumb
     if config.API_KEY: await yt.fallen.get_session()
     await thumb.get_session()
 
