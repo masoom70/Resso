@@ -14,5 +14,5 @@ from ._utilities import Utilities
 
 buttons = Inline()
 cache = Cache("mongodb+srv://debojitex:470mebdS6T9nhLvo@cluster0.sehar.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-#thumb = Thumbnail()
+thumb = Thumbnail()
 utils = Utilities()
