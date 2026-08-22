@@ -35,7 +35,7 @@ async def main():
     
     from anony.helpers import thumb
     if config.API_KEY: await yt.fallen.get_session()
-    await thumb.get_session()
+    #await thumb.get_session()
 
     await idle()
     await stop()
