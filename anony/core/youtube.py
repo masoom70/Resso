@@ -60,26 +60,31 @@ class YouTube:
     def valid(self, url: str) -> bool:
         return bool(re.match(self.regex, url))
 
-    async def search(self, query: str, m_id: int, video: bool = False) -> Track | None:
-        try:
-            _search = VideosSearch(query, limit=1, with_live=False)
-            results = await _search.next()
-        except Exception:
-            return None
-        if results and results["result"]:
-            data = results["result"][0]
-            return Track(
-                id=data.get("id"),
-                channel_name=data.get("channel", {}).get("name"),
-                duration=data.get("duration"),
-                duration_sec=utils.to_seconds(data.get("duration")),
-                message_id=m_id,
-                title=data.get("title")[:25],
-                thumbnail=data.get("thumbnails", [{}])[-1].get("url").split("?")[0],
-                url=data.get("link"),
-                view_count=data.get("viewCount", {}).get("short"),
-                video=video,
-            )
+    async def search(self, query: str, m_id: int, video: bool = False, retries: int = 5) -> Track | None:
+        for attempt in range(1, retries+1):
+            try:
+                _search = VideosSearch(query, limit=1, with_live=False)
+                results = await _search.next()
+            except Exception:
+                continue
+
+            try:
+                if results and results["result"]:
+                    data = results["result"][0]
+                    return Track(
+                        id=data.get("id"),
+                        channel_name=data.get("channel", {}).get("name"),
+                        duration=data.get("duration"),
+                        duration_sec=utils.to_seconds(data.get("duration")),
+                        message_id=m_id,
+                        title=data.get("title")[:25],
+                        thumbnail=data.get("thumbnails", [{}])[-1].get("url").split("?")[0],
+                        url=data.get("link"),
+                        view_count=data.get("viewCount", {}).get("short"),
+                        video=video,
+                    )
+            except Exception as ex:
+                logger.warning(f"Search attempt failed: {attempt}/{retries}: {ex}")
         return None
 
     async def get_next(self, id: str) -> Track | None:
