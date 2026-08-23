@@ -17,11 +17,13 @@ logging.basicConfig(
     ],
     level=logging.INFO,
 )
+logging.getLogger("aiohttp").setLevel(logging.CRITICAL)
 logging.getLogger("httpx").setLevel(logging.ERROR)
 logging.getLogger("ntgcalls").setLevel(logging.CRITICAL)
 logging.getLogger("pymongo").setLevel(logging.ERROR)
 logging.getLogger("pyrogram").setLevel(logging.CRITICAL)
 logging.getLogger("pytgcalls").setLevel(logging.CRITICAL)
+logging.getLogger("py_yt").setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 
