@@ -18,6 +18,16 @@ from anony.helpers import cache, Track, utils
 from ._api import FallenApi
 
 
+class DummyLogger:
+    def debug(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        pass
+
 class YouTube:
     def __init__(self):
         self.base = "https://www.youtube.com/watch?v="
@@ -157,8 +167,10 @@ class YouTube:
             "geo_bypass": True,
             "no_warnings": True,
             "overwrites": False,
+            "logger": DummyLogger(),
             "nocheckcertificate": True,
             "cookiefile": cookie,
+            "remote_components": ["ejs:github"],
         }
 
         if video:
@@ -178,14 +190,16 @@ class YouTube:
                 try:
                     ydl.download([url])
                 except (yt_dlp.utils.DownloadError, yt_dlp.utils.ExtractorError):
-                    if cookie: self.cookies.remove(cookie)
                     return None
                 except Exception as ex:
                     logger.warning("Download failed: %s", ex)
                     return None
             return filename
 
-        await asyncio.to_thread(_download)
+        filename = await asyncio.to_thread(_download)
+        if not filename:
+            return None
+
         try:
             await cache.handle_dl(filename, video_id)
         except Exception:
