@@ -84,7 +84,7 @@ class FallenApi:
             try:
                 async with self.session.get(cdn_url) as resp:
                     if resp.status != 200:
-                        logger.warning(f"[HTTP {resp.status}] Failed to download from {cdn_url}")
+                        logger.warning(f"Failed to download: [HTTP {resp.status}]")
                         return None
 
                     cd = resp.headers.get("Content-Disposition")
