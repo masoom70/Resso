@@ -6,7 +6,6 @@
 import asyncio
 import signal
 import importlib
-from contextlib import suppress
 
 from anony import (anon, app, config, db,
                    logger, stop, userbot, yt)
@@ -17,9 +16,16 @@ async def idle():
     loop = asyncio.get_running_loop()
     stop_event = asyncio.Event()
 
-    for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-        with suppress(NotImplementedError):
+    try:
+        for sig in (signal.SIGINT, signal.SIGTERM):
             loop.add_signal_handler(sig, stop_event.set)
+    except NotImplementedError:
+        def handler(sig, frame):
+            loop.call_soon_threadsafe(stop_event.set)
+
+        signal.signal(signal.SIGINT, handler)
+        signal.signal(signal.SIGTERM, handler)
+
     await stop_event.wait()
 
 async def main():
@@ -52,6 +58,6 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.get_event_loop().run_until_complete(main())
+        asyncio.run(main())
     except KeyboardInterrupt:
         pass
