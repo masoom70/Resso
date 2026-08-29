@@ -1,3 +1,8 @@
+# Copyright (c) 2025 AnonymousX1025
+# Licensed under the MIT License.
+# This file is part of AnonXMusic
+
+
 import asyncio
 
 from pyrogram import enums, errors, types
@@ -29,6 +34,8 @@ def checkUB(play):
         )
         video = m.command[0][0] == "v" and config.VIDEO_PLAY
         url = utils.get_url(m)
+        if url and yt.invalid(url):
+            return await m.reply_text(m.lang["play_not_found"].format(config.SUPPORT_CHAT))
         m3u8 = url and not yt.valid(url)
 
         play_mode = await db.get_play_mode(chat_id)
@@ -53,7 +60,7 @@ def checkUB(play):
                         await app.unban_chat_member(
                             chat_id=chat_id, user_id=client.id
                         )
-                    except:
+                    except Exception:
                         return await m.reply_text(
                             m.lang["play_banned"].format(
                                 app.name,
@@ -64,13 +71,9 @@ def checkUB(play):
                         )
             except errors.ChatAdminRequired:
                 return await m.reply_text(m.lang["admin_required"])
-            except (errors.UserNotParticipant, errors.exceptions.bad_request_400.UserNotParticipant):
+            except errors.UserNotParticipant:
                 if m.chat.username:
                     invite_link = m.chat.username
-                    try:
-                        await client.resolve_peer(invite_link)
-                    except:
-                        pass
                 else:
                     try:
                         invite_link = (await app.get_chat(chat_id)).invite_link
@@ -85,37 +88,25 @@ def checkUB(play):
 
                 umm = await m.reply_text(m.lang["play_invite"].format(app.name))
                 await asyncio.sleep(2)
-
-                for i in range(3):
+                try:
+                    await client.join_chat(invite_link)
+                except errors.UserAlreadyParticipant:
+                    pass
+                except errors.InviteRequestSent:
+                    await asyncio.sleep(2)
                     try:
-                        await client.join_chat(invite_link)
-                        break
-                    except errors.UserAlreadyParticipant:
-                        break
-                    except errors.InviteRequestSent:
-                        await asyncio.sleep(2)
-                        try:
-                            await app.approve_chat_join_request(chat_id, client.id)
-                        except errors.HideRequesterMissing:
-                            pass
-                        except Exception as ex:
-                            return await umm.edit_text(
-                                m.lang["play_invite_error"].format(type(ex).__name__)
-                            )
-                        break
-                    except errors.FloodWait as fw:
-                        if i == 2:
-                            await asyncio.sleep(fw.value)
-                            return await umm.edit_text(
-                                m.lang["play_invite_error"].format("FloodWait")
-                            )
-                        client = await db.change_assistant(chat_id)
-                        await asyncio.sleep(1)
+                        await app.approve_chat_join_request(chat_id, client.id)
+                    except errors.HideRequesterMissing:
+                        pass
                     except Exception as ex:
-                        logger.error(f"Error joining chat - {chat_id}: {ex}")
                         return await umm.edit_text(
                             m.lang["play_invite_error"].format(type(ex).__name__)
                         )
+                except Exception as ex:
+                    logger.error(f"Error joining chat - {chat_id}: {ex}")
+                    return await umm.edit_text(
+                        m.lang["play_invite_error"].format(type(ex).__name__)
+                    )
 
                 await umm.delete()
 
