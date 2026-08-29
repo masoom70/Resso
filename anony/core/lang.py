@@ -3,7 +3,6 @@
 # This file is part of AnonXMusic
 
 
-import re
 import json
 from functools import wraps
 from pathlib import Path
@@ -38,7 +37,6 @@ class Language:
         self.lang_codes = lang_codes
         self.lang_dir = Path("anony/locales")
         self.languages = self.load_files()
-        self.regex = re.compile(r"[\u1000-\u109F\uAA80-\uAADB]+")
 
     def load_files(self):
         languages = {}
@@ -78,16 +76,10 @@ class Language:
                 elif hasattr(fallen, "message"):
                     chat = fallen.message.chat
 
-                try:
-                    if bool(re.search(self.regex, fallen.text)):
-                        admins = await db.get_admins(chat.id)
-                        if fallen.from_user.id in admins:
-                            return await chat.leave()
-                except Exception:
-                    pass
+                if not chat: return
 
                 if chat.id in db.blacklisted:
-                    logger.warning(f"Chat {chat.id} is blacklisted, leaving...")
+                    logger.info(f"Chat {chat.id} is blacklisted, leaving...")
                     return await chat.leave()
 
                 lang_code = await db.get_lang(chat.id)
@@ -96,7 +88,17 @@ class Language:
                 setattr(fallen, "lang", lang_dict)
                 try:
                     return await func(*args, **kwargs)
-                except (errors.Forbidden, errors.exceptions.Forbidden):
+                except (errors.FloodWait, errors.SlowmodeWait):
+                    return
+                except (
+                    errors.ChannelInvalid, errors.ChannelPrivate,
+                    errors.MessageIdInvalid, errors.MessageNotModified,
+                ):
+                    return
+                except (
+                    errors.Forbidden, errors.exceptions.Forbidden,
+                    errors.ChatWriteForbidden, errors.exceptions.ChatWriteForbidden,
+                ):
                     return
 
             return wrapper
