@@ -13,7 +13,7 @@ dependencies = [
     "py-tgcalls==3.0.0rc3",
     "py-yt-search~=0.8.0",
     "nodejs-wheel-binaries",
-    "pymongo~=4.17.0",
+    "pymongo>=4.17,<4.19",
     "pytgcrypto>=1.2.12",
     "python-dotenv==1.2.3",
     "yt-dlp[default]>=2026.7.4",
