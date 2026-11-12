@@ -19,29 +19,65 @@ async def _watcher_vc(_, m: types.Message):
     await anon.stop(m.chat.id)
 
 
+cache = {}
+cache_ttl = 3 * 60 * 60
+created_at = time.monotonic()
+
+def get_cache():
+    global created_at
+
+    if time.monotonic() - created_at >= cache_ttl:
+        cache.clear()
+        created_at = time.monotonic()
+
+    return cache
+
+
 async def auto_leave():
     while True:
         await asyncio.sleep(3600)
+
         if not await db.auto_leave():
             continue
-        logger.info("Running auto-leave task...")
+
         for i, ub in enumerate(userbot.clients, start=1):
-            left = 0
             try:
-                chats = [dialog.chat.id async for dialog in ub.get_dialogs()
-                         if dialog.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]][-25:]
-                for chat in chats:
+                _cache = get_cache()
+                if ub.me.id not in _cache:
+                    _cache[ub.me.id] = [
+                        dialog.chat.id
+                        async for dialog in ub.get_dialogs()
+                        if dialog.chat.type in (
+                            enums.ChatType.GROUP,
+                            enums.ChatType.SUPERGROUP,
+                        )
+                    ][-100:]
+                chats = _cache[ub.me.id]
+
+                if len(chats) < 75:
+                    continue
+
+                left = 0
+                for chat in chats.copy():
+                    if left >= 10:
+                        break
+
+                    if chat in {app.logger, -1001686672798, -1001549206010}:
+                        continue
                     if chat in db.active_calls:
                         continue
-                    if chat in [app.logger, -1001686672798, -1001549206010]:
-                        continue
+
                     try:
                         await ub.leave_chat(chat)
+                        chats.remove(chat)
                         left += 1
-                        logger.info(f"Assistant {i} left: {chat}")
+                    except errors.FloodWait:
+                        break
                     except Exception as ex:
                         logger.warning(f"Assistant {i} failed to leave {chat}: {ex}")
-                    await asyncio.sleep(15)
+                        continue
+                    await asyncio.sleep(30)
+
             except asyncio.CancelledError:
                 raise
             except Exception:
