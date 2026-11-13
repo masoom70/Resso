@@ -109,7 +109,7 @@ def checkUB(play):
                             notified.remove(client.me.id)
                         break
 
-                    except errors.UserChannelsTooMuch:
+                    except errors.ChannelsTooMuch:
                         logger.warning(f"Assistant {client.me.full_name} chats are full.")
                         try:
                             if client.me.id not in notified:

@@ -13,19 +13,24 @@ from anony import app, db, userbot
 async def _leaveall(_, m: types.Message):
     if len(m.command) < 2:
         return await m.reply_text("Which assistant?")
-    
+
     try:
         num = int(m.command[1])
     except ValueError:
         return await m.reply_text("Invalid number")
 
-    left, failed = 0, 0
-    sent = await m.reply_text("Leaving all chats...")
     asses = {
         1: userbot.one,
         2: userbot.two,
         3: userbot.three,
+        4: userbot.four,
+        5: userbot.five,
     }
+    if num not in asses.keys():
+        return await m.reply_text(f"Assistant {num} not found.")
+
+    left, failed = 0, 0
+    sent = await m.reply_text("Leaving all chats...")
 
     async for dialog in asses[num].get_dialogs():
         chat = dialog.chat
